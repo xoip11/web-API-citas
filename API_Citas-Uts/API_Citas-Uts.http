@@ -1,0 +1,6 @@
+@API_Citas_Uts_HostAddress = http://localhost:5138
+
+GET {{API_Citas_Uts_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
