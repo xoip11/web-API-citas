@@ -17,7 +17,7 @@ namespace API_Citas_Uts.Controllers
             _configuration = configuration;
         }
 
-        [HttpGet]
+        [HttpGet("Listar")]
         public IActionResult ListarAppointment()
         {
             List<Appointment> citas = new List<Appointment>();
@@ -48,7 +48,7 @@ namespace API_Citas_Uts.Controllers
             }
             return Ok(citas);
         }
-        [HttpPost]
+        [HttpPost("Crear")]
         public IActionResult AgregarAppointment([FromBody] Appointment cita)
         {
             if (cita == null)
@@ -71,7 +71,7 @@ namespace API_Citas_Uts.Controllers
             return Ok("Cita creada correctamente");
         }
 
-        [HttpPut]
+        [HttpPut("Actualizar")]
         public IActionResult ActualizarAppointment(Appointment cita)
         {
             if (cita == null || cita.IdCita <= 0)
@@ -95,6 +95,113 @@ namespace API_Citas_Uts.Controllers
                 else
                     return NotFound("Cita no encontrada.");
             }
+        }
+
+        [HttpDelete("Borrar/{id}")]
+        public IActionResult CancelarAppointment(int id)
+        {
+            if (id <= 0)
+                return BadRequest("ID de cita no válido.");
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                SqlCommand cmd = new SqlCommand("Cancelar_Appointment", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@idCita", id);
+                conn.Open();
+                object result = cmd.ExecuteScalar();
+                int rowsAffected = result != null ? Convert.ToInt32(result) : 0;
+                if (rowsAffected > 0)
+                    return Ok("Cita cancelada correctamente.");
+                else
+                    return NotFound("Cita no encontrada.");
+            }
+        }
+
+        [HttpPut("confirmar/{id}")]
+        public IActionResult ConfirmarAppointment(int id)
+        {
+            if (id <= 0)
+                return BadRequest("ID de cita no válido.");
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                SqlCommand cmd = new SqlCommand("Confirmar_Appointment", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@idCita", id);
+                conn.Open();
+                object result = cmd.ExecuteScalar();
+                int rowsAffected = result != null ? Convert.ToInt32(result) : 0;
+                if (rowsAffected > 0)
+                    return Ok("Cita confirmada correctamente.");
+                else
+                    return NotFound("Cita no encontrada.");
+            }
+        }
+
+        [HttpGet("buscar/{id}")]
+        public IActionResult BuscarCita(int id)
+        {
+            if (id <= 0)
+                return BadRequest("ID de cita no válido.");
+            
+            Appointment cita = null;
+
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                SqlCommand cmd = new SqlCommand("Bus_Appointment", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@idCita", id);
+
+                conn.Open();
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    cita = new Appointment
+                    {
+                        IdCita = Convert.ToInt32(reader["idCita"]),
+                        IdUsuarioEstudiante = Convert.ToInt32(reader["IdUsuarioEstudiante"]),
+                        IdEspecialista = Convert.ToInt32(reader["IdEspecialista"]),
+                        Fecha = Convert.ToDateTime(reader["fecha"]),
+                        Hora = (TimeSpan)reader["hora"],
+                        Descripcion = reader["descripcion"].ToString(),
+                        Estado = reader["estado"].ToString()
+                    };
+                }
+            }
+
+            if (cita == null)
+                return NotFound("Cita no encontrada.");
+
+            return Ok(cita);
+        }
+
+        //METODOS RELACIONADOS DE ESTUDIANTES
+        [HttpPost("AggUsuario")]
+        public IActionResult InsertarUsuario([FromBody] User usuario)
+        {
+            if (usuario == null || string.IsNullOrWhiteSpace(usuario.nombreUsuario) || string.IsNullOrWhiteSpace(usuario.Correo) || string.IsNullOrWhiteSpace(usuario.Contrasena))
+            {
+                return BadRequest("Datos de usuario no válidos.");
+            }
+
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                SqlCommand cmd = new SqlCommand("Ins_Users", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@Nombre_usuario", SqlDbType.VarChar, 100).Value = usuario.nombreUsuario;
+                cmd.Parameters.Add("@Rol", SqlDbType.VarChar, 50).Value = usuario.Rol;
+                cmd.Parameters.Add("@Correo", SqlDbType.VarChar, 100).Value = usuario.Correo;
+                cmd.Parameters.Add("@Contraseña", SqlDbType.VarChar, 100).Value = usuario.Contrasena;
+                cmd.Parameters.Add("@Carrera", SqlDbType.VarChar, 100).Value = usuario.Carrera;
+                cmd.Parameters.Add("@Telefono", SqlDbType.VarChar, 20).Value = usuario.telefono;
+
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+            return Ok("Usuario creado correctamente");
         }
     }
 }
