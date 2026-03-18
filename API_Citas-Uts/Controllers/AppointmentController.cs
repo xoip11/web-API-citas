@@ -137,12 +137,12 @@ namespace API_Citas_Uts.Controllers
             }
         }
 
-        [HttpGet("buscar/{id}")]
+        [HttpGet("buscar/cita/{id}")]
         public IActionResult BuscarCita(int id)
         {
             if (id <= 0)
                 return BadRequest("ID de cita no válido.");
-            
+
             Appointment cita = null;
 
             using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
@@ -175,33 +175,6 @@ namespace API_Citas_Uts.Controllers
                 return NotFound("Cita no encontrada.");
 
             return Ok(cita);
-        }
-
-        //METODOS RELACIONADOS DE ESTUDIANTES
-        [HttpPost("AggUsuario")]
-        public IActionResult InsertarUsuario([FromBody] User usuario)
-        {
-            if (usuario == null || string.IsNullOrWhiteSpace(usuario.nombreUsuario) || string.IsNullOrWhiteSpace(usuario.Correo) || string.IsNullOrWhiteSpace(usuario.Contrasena))
-            {
-                return BadRequest("Datos de usuario no válidos.");
-            }
-
-            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
-            {
-                SqlCommand cmd = new SqlCommand("Ins_Users", conn);
-                cmd.CommandType = System.Data.CommandType.StoredProcedure;
-
-                cmd.Parameters.Add("@Nombre_usuario", SqlDbType.VarChar, 100).Value = usuario.nombreUsuario;
-                cmd.Parameters.Add("@Rol", SqlDbType.VarChar, 50).Value = usuario.Rol;
-                cmd.Parameters.Add("@Correo", SqlDbType.VarChar, 100).Value = usuario.Correo;
-                cmd.Parameters.Add("@Contraseña", SqlDbType.VarChar, 100).Value = usuario.Contrasena;
-                cmd.Parameters.Add("@Carrera", SqlDbType.VarChar, 100).Value = usuario.Carrera;
-                cmd.Parameters.Add("@Telefono", SqlDbType.VarChar, 20).Value = usuario.telefono;
-
-                conn.Open();
-                cmd.ExecuteNonQuery();
-            }
-            return Ok("Usuario creado correctamente");
         }
     }
 }
