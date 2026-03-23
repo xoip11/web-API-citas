@@ -1,4 +1,5 @@
-﻿using API_Citas_Uts.Models;
+﻿using API_Citas_Uts.DTOs.Appointment;
+using API_Citas_Uts.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -20,7 +21,7 @@ namespace API_Citas_Uts.Controllers
         [HttpGet("Listar")]
         public IActionResult ListarAppointment()
         {
-            List<Appointment> citas = new List<Appointment>();
+            List<ListAppointment> citas = new List<ListAppointment>();
 
             using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
@@ -33,7 +34,7 @@ namespace API_Citas_Uts.Controllers
 
                 while (reader.Read())
                 {
-                    Appointment cita = new Appointment();
+                    ListAppointment cita = new ListAppointment();
 
                     cita.IdCita = Convert.ToInt32(reader["idCita"]);
                     cita.IdUsuarioEstudiante = Convert.ToInt32(reader["IdUsuarioEstudiante"]);
@@ -49,7 +50,7 @@ namespace API_Citas_Uts.Controllers
             return Ok(citas);
         }
         [HttpPost("Crear")]
-        public IActionResult AgregarAppointment([FromBody] Appointment cita)
+        public IActionResult AgregarAppointment([FromBody] InsAppointment cita)
         {
             if (cita == null)
                 return BadRequest("Datos de cita no proporcionados.");
@@ -72,7 +73,7 @@ namespace API_Citas_Uts.Controllers
         }
 
         [HttpPut("Actualizar")]
-        public IActionResult ActualizarAppointment(Appointment cita)
+        public IActionResult ActualizarAppointment(ActAppointment cita)
         {
             if (cita == null || cita.IdCita <= 0)
                 return BadRequest("Datos de cita no válidos.");
@@ -161,7 +162,7 @@ namespace API_Citas_Uts.Controllers
                     cita = new Appointment
                     {
                         IdCita = Convert.ToInt32(reader["idCita"]),
-                        IdUsuarioEstudiante = Convert.ToInt32(reader["IdUsuarioEstudiante"]),
+                        IdUsuario = Convert.ToInt32(reader["IdUsuarioEstudiante"]),
                         IdEspecialista = Convert.ToInt32(reader["IdEspecialista"]),
                         Fecha = Convert.ToDateTime(reader["fecha"]),
                         Hora = (TimeSpan)reader["hora"],
@@ -176,5 +177,7 @@ namespace API_Citas_Uts.Controllers
 
             return Ok(cita);
         }
+
+
     }
 }

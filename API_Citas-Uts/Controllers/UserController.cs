@@ -1,5 +1,6 @@
 ﻿using API_Citas_Uts.DTOs.User;
 using API_Citas_Uts.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
@@ -26,26 +27,38 @@ namespace API_Citas_Uts.Controllers
                 return BadRequest("Datos de usuario no válidos.");
             }
 
-            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            string hashedPassword = _hasher.HashPassword(null, usuario.Contrasena);
+
+            try
             {
-                SqlCommand cmd = new SqlCommand("Ins_Users", conn);
-                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+                {
+                    SqlCommand cmd = new SqlCommand("Ins_Users", conn);
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
 
-                cmd.Parameters.Add("@Nombre_usuario", SqlDbType.VarChar, 100).Value = usuario.nombreUsuario;
-                cmd.Parameters.Add("@Rol", SqlDbType.VarChar, 50).Value = usuario.Rol;
-                cmd.Parameters.Add("@Correo", SqlDbType.VarChar, 100).Value = usuario.Correo;
-                cmd.Parameters.Add("@Contraseña", SqlDbType.VarChar, 100).Value = usuario.Contrasena;
-                cmd.Parameters.Add("@Carrera", SqlDbType.VarChar, 100).Value = usuario.Carrera;
-                cmd.Parameters.Add("@Telefono", SqlDbType.VarChar, 20).Value = usuario.telefono;
+                    cmd.Parameters.Add("@Nombre_usuario", SqlDbType.VarChar, 100).Value = usuario.nombreUsuario;
+                    cmd.Parameters.Add("@Rol", SqlDbType.VarChar, 50).Value = usuario.Rol;
+                    cmd.Parameters.Add("@Correo", SqlDbType.VarChar, 100).Value = usuario.Correo;
+                    cmd.Parameters.Add("@Contraseña", SqlDbType.VarChar, 200).Value = hashedPassword;
+                    cmd.Parameters.Add("@Carrera", SqlDbType.VarChar, 100).Value = usuario.Carrera;
+                    cmd.Parameters.Add("@Telefono", SqlDbType.VarChar, 20).Value = usuario.telefono;
 
-                conn.Open();
-                cmd.ExecuteNonQuery();
+                    conn.Open();
+                    int idGenerado = Convert.ToInt32(cmd.ExecuteScalar());
+                }
+                return Ok("Usuario creado correctamente");
             }
-            return Ok("Usuario creado correctamente");
+            catch (SqlException ex)
+            {
+                if (ex.Message.Contains("Rol no válido"))
+                    return BadRequest("El rol debe ser: Administrador, Especialista o Estudiante");
+
+                return StatusCode(500, "Error interno");
+            }
         }
 
         [HttpPut("Act/Users")]
-        public IActionResult ActualizarUsuarios(User Usuario)
+        public IActionResult ActualizarUsuarios(ActuUserDTO Usuario)
         {
             if (Usuario == null || Usuario.IdUsuario <= 0)
                 return BadRequest("Datos de el usuario no válidos.");
@@ -79,24 +92,17 @@ namespace API_Citas_Uts.Controllers
 
             }
         }
+        private readonly PasswordHasher<string> _hasher = new PasswordHasher<string>();
 
-        private string HashPassword(string password)
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return Convert.ToBase64String(bytes);
-            }
-        }
         [HttpPut("act/contra")]
-        public IActionResult ActualizarContra(User Usuario)
+        public IActionResult ActualizarContra(ActuPasswordDTO Usuario)
         {
             if (Usuario == null || Usuario.IdUsuario <= 0 || string.IsNullOrEmpty(Usuario.Contrasena))
                 return BadRequest("Datos de el usuario no válidos.");
 
             try
             {
-                string hashedPassword = HashPassword(Usuario.Contrasena);
+                string hashedPassword = _hasher.HashPassword(null, Usuario.Contrasena);
 
                 using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
                 {
@@ -104,17 +110,16 @@ namespace API_Citas_Uts.Controllers
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     cmd.Parameters.Add("@IdUsuario", SqlDbType.Int).Value = Usuario.IdUsuario;
-                    cmd.Parameters.Add("@Contraseña", SqlDbType.VarChar, 100).Value = hashedPassword;
+                    cmd.Parameters.Add("@Contrasena", SqlDbType.VarChar, 200).Value = hashedPassword;
 
                     conn.Open();
 
-                    object result = cmd.ExecuteScalar();
-                    int rowsAffected = result != null ? Convert.ToInt32(result) : 0;
+                    int rowsAffected = cmd.ExecuteNonQuery();
 
                     if (rowsAffected > 0)
                         return Ok("Contraseña actualizada correctamente.");
                     else
-                        return NotFound("Usuario no encontrado o contraseña incorrecta.");
+                        return NotFound("Usuario no encontrado.");
                 }
             }
             catch (Exception ex)
@@ -162,5 +167,72 @@ namespace API_Citas_Uts.Controllers
 
             return Ok(Usuario);
         }
+
+        [HttpDelete("BorrarUser/{id}")]
+        public IActionResult EliminarUsuario(int id)
+        {
+            if (id <= 0)
+                return BadRequest("ID de Usuario no valido.");
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                SqlCommand cmd = new SqlCommand("Bor_Users", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@IdUsuario", id);
+                conn.Open();
+                int rowsAffected = Convert.ToInt32(cmd.ExecuteScalar());
+
+                if (rowsAffected > 0)
+                    return Ok("Usuario eliminado correctamente.");
+                else
+                    return NotFound("No existe este usuario.");
+            }
+        }
+
+        [HttpGet("ListarUsers")]
+        public IActionResult ListarUsuarios(string? nombre = null, string? rol = null)
+        {
+            List<User> usuarios = new List<User>();
+
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                SqlCommand cmd = new SqlCommand("List_Users", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@nombre", (object?)nombre ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Rol", (object?)rol ?? DBNull.Value);
+
+                conn.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        User usuario = new User
+                        {
+                            IdUsuario = Convert.ToInt32(reader["IdUsuario"]),
+                            nombreUsuario = reader["NombreUsuario"].ToString(),
+                            Rol = reader["Rol"].ToString(),
+                            Correo = reader["Correo"].ToString(),
+                            activo = Convert.ToBoolean(reader["Activo"]),
+                            Carrera = reader["Carrera"].ToString(),
+                            telefono = reader["Telefono"].ToString()
+                        };
+                        usuarios.Add(usuario);
+                    }
+                }
+            }
+            if (usuarios.Count == 0)
+            {
+                return Ok(new
+                {
+                    mensaje = "No se encontraron usuarios",
+                    data = usuarios
+                });
+            }
+
+            return Ok(usuarios);
+        }
+
     }
+    
 }

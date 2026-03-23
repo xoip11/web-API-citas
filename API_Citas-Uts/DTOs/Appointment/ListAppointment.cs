@@ -1,10 +1,10 @@
-﻿namespace API_Citas_Uts.Models
+﻿namespace API_Citas_Uts.DTOs.Appointment
 {
-    public class Appointment
+    public class ListAppointment
     {
         public int IdCita { get; set; }
 
-        public int IdUsuario { get; set; }
+        public int IdUsuarioEstudiante { get; set; }
 
         public int IdEspecialista { get; set; }
 
@@ -12,7 +12,7 @@
 
         public TimeSpan Hora { get; set; }
 
-        public string? Descripcion { get; set; }
+        public string Descripcion { get; set; }
 
         public string? Estado { get; set; }
     }
