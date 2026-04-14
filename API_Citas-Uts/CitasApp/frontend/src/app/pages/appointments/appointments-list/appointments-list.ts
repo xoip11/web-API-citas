@@ -1,11 +1,22 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { Appointment } from '../../../models/appointment.model';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
+
 import { AppointmentService } from '../../../services/appointment.service';
+import { Appointment } from '../../../models/appointment.model';
 
 @Component({
   selector: 'app-appointments-list',
-  templateUrl: '../appointments-list/appointments-list.html',
-  styleUrls: ['../appointments-list/appointments-list.css']
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatTableModule,
+    MatButtonModule
+  ],
+  templateUrl: './appointments-list.html',
+  styleUrls: ['./appointments-list.css']
 })
 export class AppointmentsListComponent implements OnInit {
 
@@ -16,35 +27,26 @@ export class AppointmentsListComponent implements OnInit {
     'fecha', 'hora', 'descripcion', 'estado', 'actions'
   ];
 
-  constructor(
-    private appointmentService: AppointmentService,
-    private cd: ChangeDetectorRef
-  ) {}
+  constructor(private service: AppointmentService) {}
 
-  ngOnInit(): void {
-    this.loadAppointments();
+  ngOnInit() {
+    this.load();
   }
 
-  loadAppointments() {
-    this.appointmentService.getAppointments()
+  load() {
+    this.service.getAppointments()
       .subscribe(data => {
-        this.appointments = data;
-        this.cd.detectChanges();
-      });
+        console.log(data);  
+        this.appointments = data});
   }
 
   deleteAppointment(id: number) {
-    this.appointmentService.deleteAppointment(id)
-      .subscribe(() => this.loadAppointments());
+    this.service.deleteAppointment(id)
+      .subscribe(() => this.load());
   }
 
   confirmAppointment(id: number) {
-    this.appointmentService.confirmAppointment(id)
-      .subscribe(() => this.loadAppointments());
-  }
-
-  editAppointment(cita: Appointment) {
-    // Aquí puedes navegar a appointments-edit pasando el id
-    // Ejemplo: this.router.navigate(['/appointments/edit', cita.idCita]);
+    this.service.confirmAppointment(id)
+      .subscribe(() => this.load());
   }
 }

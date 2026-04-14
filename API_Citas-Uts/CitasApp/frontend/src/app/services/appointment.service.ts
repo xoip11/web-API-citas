@@ -3,9 +3,7 @@ import { Injectable } from "@angular/core";
 import { Appointment } from "../models/appointment.model";
 import { Observable } from "rxjs";
 
-@Injectable({
-  providedIn: "root",
-})
+@Injectable({ providedIn: "root",})
 export class AppointmentService {
 
   private apiUrl = 'https://localhost:7140/api/Appointment';
