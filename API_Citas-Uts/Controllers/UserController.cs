@@ -14,11 +14,13 @@ namespace API_Citas_Uts.Controllers
     public class UserController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-
+        // El constructor del controlador recibe una instancia de IConfiguration
+        // para acceder a la cadena de conexión a la base de datos.
         public UserController(IConfiguration configuration)
         {
             _configuration = configuration;
         }
+        // El método InsertarUsuario recibe un objeto InsUserDTO con los datos del nuevo usuario, y los manda a la bd
         [HttpPost("AggUsuario")]
         public IActionResult InsertarUsuario([FromBody] InsUserDTO usuario)
         {
@@ -56,7 +58,7 @@ namespace API_Citas_Uts.Controllers
                 return StatusCode(500, "Error interno");
             }
         }
-
+        // El método ActualizarUsuarios recibe un objeto ActuUserDTO con los datos actualizados del usuario, y los manda a la bd
         [HttpPut("Act/Users")]
         public IActionResult ActualizarUsuarios(ActuUserDTO Usuario)
         {
@@ -92,8 +94,11 @@ namespace API_Citas_Uts.Controllers
 
             }
         }
+        // Se crea una instancia de PasswordHasher para hashear las contraseñas antes de guardarlas en la base de datos.
         private readonly PasswordHasher<string> _hasher = new PasswordHasher<string>();
 
+        // El método ActualizarContra recibe un objeto ActuPasswordDTO con la nueva contraseña del usuario,
+        // la hashea y la manda a la bd
         [HttpPut("act/contra")]
         public IActionResult ActualizarContra(ActuPasswordDTO Usuario)
         {
@@ -127,6 +132,7 @@ namespace API_Citas_Uts.Controllers
                 return StatusCode(500, $"Error interno {ex.Message}");
             }
         }
+        // El método BuscarUser recibe un ID de usuario por la URL, lo busca en la base de datos y devuelve sus datos.
         [HttpGet("buscar/User/{id}")]
         public IActionResult BuscarUser(int id)
         {
@@ -167,7 +173,9 @@ namespace API_Citas_Uts.Controllers
 
             return Ok(Usuario);
         }
-
+        // El método EliminarUsuario recibe un ID de usuario por la URL, lo busca en la base de datos y lo pone en estado inactivo,
+        // para no perder la integridad referencial de la base de datos,
+        // ya que el usuario puede estar relacionado con otras tablas como especialista o citas.
         [HttpDelete("BorrarUser/{id}")]
         public IActionResult EliminarUsuario(int id)
         {
@@ -187,7 +195,8 @@ namespace API_Citas_Uts.Controllers
                     return NotFound("No existe este usuario.");
             }
         }
-
+        // El método ListarUsuarios recibe dos parámetros opcionales por la URL, nombre y rol,
+        // y devuelve una lista de usuarios que coincidan con esos parámetros
         [HttpGet("ListarUsers")]
         public IActionResult ListarUsuarios(string? nombre = null, string? rol = null)
         {

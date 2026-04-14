@@ -1,0 +1,40 @@
+<mat-card>
+<h2>gestion de citas</h2>
+<div class="form">
+  <mat-form-field appearance="outline">
+    <mat-label>Id cita</mat-label>
+   <input matInput [value]="newAppointment.idCita" disabled>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Id usuario</mat-label>
+    <input matInput  type="number"  [(ngModel)]="newAppointment.idUsuarioEstudiante">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Id especialista</mat-label>
+    <input matInput  type="number"  [(ngModel)]="newAppointment.idEspecialista">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Fecha</mat-label>
+    <input matInput [(ngModel)]="newAppointment.fecha">
+  </mat-form-field>
+
+   <mat-form-field appearance="outline">
+    <mat-label>Hora</mat-label>
+    <input matInput [(ngModel)]="newAppointment.hora">
+  </mat-form-field>
+
+   <mat-form-field appearance="outline">
+    <mat-label>Descripcion</mat-label>
+    <textarea matInput rows="1" [(ngModel)]="newAppointment.descripcion"></textarea>
+  </mat-form-field>
+
+   
+
+  <button mat-raised-button color="primary" (click)="saveAppointment()">
+    Guardar
+  </button>
+</div>
+</mat-card>

@@ -18,6 +18,7 @@ namespace API_Citas_Uts.Controllers
             _configuration = configuration;
         }
 
+        //procedimiento almacenado de listar citas
         [HttpGet("Listar")]
         public IActionResult ListarAppointment()
         {
@@ -49,6 +50,7 @@ namespace API_Citas_Uts.Controllers
             }
             return Ok(citas);
         }
+        //procedimiento almacenado de crear cita
         [HttpPost("Crear")]
         public IActionResult AgregarAppointment([FromBody] InsAppointment cita)
         {
@@ -69,8 +71,9 @@ namespace API_Citas_Uts.Controllers
                 conn.Open();
                 cmd.ExecuteNonQuery();
             }
-            return Ok("Cita creada correctamente");
+            return Ok(new { message = "Cita creada correctamente" });
         }
+        //procedimiento almacenado de actualizar cita
 
         [HttpPut("Actualizar")]
         public IActionResult ActualizarAppointment(ActAppointment cita)
@@ -92,12 +95,12 @@ namespace API_Citas_Uts.Controllers
                 int rowsAffected = result != null ? Convert.ToInt32(result) : 0;
 
                 if (rowsAffected > 0)
-                    return Ok("cita actualizada correctamente.");
+                    return Ok(cita);
                 else
-                    return NotFound("Cita no encontrada.");
+                    return NotFound(cita);
             }
         }
-
+        //procedimiento almacenado de cancelar cita
         [HttpDelete("Borrar/{id}")]
         public IActionResult CancelarAppointment(int id)
         {
@@ -112,12 +115,12 @@ namespace API_Citas_Uts.Controllers
                 object result = cmd.ExecuteScalar();
                 int rowsAffected = result != null ? Convert.ToInt32(result) : 0;
                 if (rowsAffected > 0)
-                    return Ok("Cita cancelada correctamente.");
+                    return Ok(new { message = "Cita cancelada correctamente." });
                 else
-                    return NotFound("Cita no encontrada.");
+                    return NotFound(new { message = "Cita no encontrada." });
             }
         }
-
+        //procedimiento almacenado de confirmar cita
         [HttpPut("confirmar/{id}")]
         public IActionResult ConfirmarAppointment(int id)
         {
@@ -132,12 +135,12 @@ namespace API_Citas_Uts.Controllers
                 object result = cmd.ExecuteScalar();
                 int rowsAffected = result != null ? Convert.ToInt32(result) : 0;
                 if (rowsAffected > 0)
-                    return Ok("Cita confirmada correctamente.");
+                    return Ok(new {message = "Cita confirmada correctamente."});
                 else
-                    return NotFound("Cita no encontrada.");
+                    return NotFound(new {message = "Cita no encontrada."});
             }
         }
-
+        //procedimiento almacenado de buscar cita por id
         [HttpGet("buscar/cita/{id}")]
         public IActionResult BuscarCita(int id)
         {

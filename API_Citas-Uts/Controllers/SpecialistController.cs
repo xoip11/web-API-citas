@@ -17,7 +17,9 @@ namespace API_Citas_Uts.Controllers
         {
             _configuration = configuration;
         }
-
+        //procedimiento almacenado de crear especialista tiene que existir un usuario previo antes de poder crear un especialista,
+        //el id del usuario se pasa como parametro al procedimiento almacenado, si el id del usuario no existe en la tabla de usuarios,
+        //el procedimiento almacenado lanzara una excepcion que se captura en el controlador y se devuelve un mensaje de error indicando que el usuario no existe.
         [HttpPost("agg/Speci")]
         public IActionResult AgregarEspecialista([FromBody] InsSpecialist especialista)
         {
@@ -49,6 +51,9 @@ namespace API_Citas_Uts.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        //procedimiento almacenado de listar especialistas tiene un parametro opcional de especialidad,
+        //si se proporciona el parametro se listaran solo los especialistas que tengan esa especialidad,
+        //si no se proporciona el parametro se listaran todos los especialistas.
         [HttpGet("Listar/Speci")]
         public IActionResult ListarSpecialist(string? especialidad = null)
         {
@@ -75,6 +80,7 @@ namespace API_Citas_Uts.Controllers
             }
             return Ok(especialistas);
         }
+        //procedimiento almacenado de buscar especialista por id tiene un parametro de id del especialista,
         [HttpGet("{id}")]
         public IActionResult BuscarSpecialist(int id)
         {
@@ -104,6 +110,7 @@ namespace API_Citas_Uts.Controllers
 
             return NotFound();
         }
+        //procedimiento almacenado de actualizar especialista tiene un parametro de id del especialista y los datos a actualizar,
         [HttpPut]
         public IActionResult ActualizarSpecialist(ActEspecilist esp)
         {
