@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Component } from '@angular/core';
 import { AppointmentService } from '../app/services/appointment.service';
 import { Appointment } from '../../src/app/models/appointment.model';
+import { AppComponent } from './app';
 
 @Component({
   selector: 'app-appointments-create',

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
+import { ChangeDetectorRef } from '@angular/core';
 
 import { AppointmentService } from '../../../services/appointment.service';
 import { Appointment } from '../../../models/appointment.model';
@@ -27,18 +28,24 @@ export class AppointmentsListComponent implements OnInit {
     'fecha', 'hora', 'descripcion', 'estado', 'actions'
   ];
 
-  constructor(private service: AppointmentService) {}
+  constructor(
+    private service: AppointmentService,
+    private cd: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.load();
   }
 
-  load() {
-    this.service.getAppointments()
-      .subscribe(data => {
-        console.log(data);  
-        this.appointments = data});
-  }
+ load() {
+  this.service.getAppointments()
+    .subscribe(data => {
+      setTimeout(() => {
+        this.appointments = data;
+        this.cd.detectChanges();
+      });
+    });
+}
 
   deleteAppointment(id: number) {
     this.service.deleteAppointment(id)
