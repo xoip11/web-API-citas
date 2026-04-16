@@ -5,9 +5,9 @@ import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class Auth {
+export class AuthService {
 
-  private api = 'https://localhost:7140/api/auth'; // ajusta a tu backend
+  private api = 'https://localhost:7140/api/auth';
 
   constructor(private http: HttpClient) {}
 
@@ -17,5 +17,9 @@ export class Auth {
 
   register(data: any): Observable<any> {
     return this.http.post(`${this.api}/register`, data);
+  }
+
+  createSpecialist(data: any): Observable<any> {
+    return this.http.post(`${this.api}/create-specialist`, data);
   }
 }

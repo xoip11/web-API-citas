@@ -6,7 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 
-import { AuthService } from '../services/auth';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -20,24 +20,25 @@ import { AuthService } from '../services/auth';
   ],
   templateUrl: './login.html'
 })
-export class LoginComponent {
+export class Login {
 
   data = {
     email: '',
     password: ''
   };
 
-  constructor(private auth: AuthService) {}
+  constructor(private authService: AuthService) {}
 
   login() {
-    this.auth.login(this.data).subscribe({
-      next: (res) => {
-        console.log('LOGIN OK', res);
-        localStorage.setItem('token', res.token); // opcional
-      },
-      error: (err) => {
-        console.error(err);
-      }
-    });
+   this.authService.login(this.data).subscribe({
+  next: (res) => {
+    console.log(res);
+    localStorage.setItem('token', res.token);
+  },
+  error: (err) => {
+    console.error(err);
   }
+});
+  }
+  
 }

@@ -6,7 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 
-import { AuthService } from '../services/auth';
+import {  AuthService } from '../../services/auth.service'; 
 
 @Component({
   selector: 'app-register',
@@ -29,10 +29,10 @@ export class RegisterComponent {
     rol: ''
   };
 
-  constructor(private auth: AuthService) {}
+  constructor(private authService: AuthService) {}
 
   register() {
-    this.auth.register(this.data).subscribe({
+    this.authService.register(this.data).subscribe({
       next: () => {
         console.log('REGISTRO OK');
       },
